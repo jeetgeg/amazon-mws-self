@@ -21,6 +21,5 @@
         "psr-4": {
             "Waimao\\AmazonMws\\": "src"
         }
-    },
-    "minimum-stability": "stable"
+    }
 }
