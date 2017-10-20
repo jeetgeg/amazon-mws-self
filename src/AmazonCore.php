@@ -112,6 +112,7 @@ abstract class AmazonCore
     protected $mockIndex = 0;
     protected $env;
     protected $rawResponses = array();
+    protected $store;
 
     /**
      * AmazonCore constructor sets up key information used in all Amazon requests.
@@ -132,7 +133,8 @@ abstract class AmazonCore
      */
     protected function __construct($s, $mock = false, $m = null)
     {
-        $this->setConfig();
+        $this->store = $s;
+        //$this->setConfig();
         $this->setStore($s);
         $this->setMock($mock, $m);
 
@@ -401,39 +403,27 @@ abstract class AmazonCore
      */
     public function setStore($s)
     {
-        // if (file_exists($this->config)){
-        //     include($this->config);
-        // } else {
-        //     throw new \Exception("Config file does not exist!");
-        // }
-
-        $store = Config::get('amazon-mws.store');
-
-        if (array_key_exists($s, $store)) {
-            $this->storeName = $s;
-            if (array_key_exists('merchantId', $store[$s])) {
-                $this->options['SellerId'] = $store[$s]['merchantId'];
-            } else {
-                $this->log("Merchant ID is missing!", 'Warning');
-            }
-            if (array_key_exists('keyId', $store[$s])) {
-                $this->options['AWSAccessKeyId'] = $store[$s]['keyId'];
-            } else {
-                $this->log("Access Key ID is missing!", 'Warning');
-            }
-            if (!array_key_exists('secretKey', $store[$s])) {
-                $this->log("Secret Key is missing!", 'Warning');
-            }
-            // Overwrite Amazon service url if specified
-            if (array_key_exists('amazonServiceUrl', $store[$s])) {
-                $AMAZON_SERVICE_URL = $store[$s]['amazonServiceUrl'];
-                $this->urlbase = $AMAZON_SERVICE_URL;
-            }
-
+        $store = $s;
+        $this->storeName = $s;
+        if (array_key_exists('merchantId', $store)) {
+            $this->options['SellerId'] = $store['merchantId'];
         } else {
-            throw new \Exception("Store $s does not exist!");
-            $this->log("Store $s does not exist!", 'Warning');
+            $this->log("Merchant ID is missing!", 'Warning');
         }
+        if (array_key_exists('keyId', $store)) {
+            $this->options['AWSAccessKeyId'] = $store['keyId'];
+        } else {
+            $this->log("Access Key ID is missing!", 'Warning');
+        }
+        if (!array_key_exists('secretKey', $store)) {
+            $this->log("Secret Key is missing!", 'Warning');
+        }
+        // Overwrite Amazon service url if specified
+        if (array_key_exists('amazonServiceUrl', $store)) {
+            $AMAZON_SERVICE_URL = $store['amazonServiceUrl'];
+            $this->urlbase = $AMAZON_SERVICE_URL;
+        }
+
     }
 
     /**
@@ -568,16 +558,8 @@ abstract class AmazonCore
      */
     protected function genQuery()
     {
-        // if (file_exists($this->config)){
-        //     include($this->config);
-        // } else {
-        //     throw new Exception("Config file does not exist!");
-        // }
-
-        $store = Config::get('amazon-mws.store');
-
-        if (array_key_exists($this->storeName, $store) && array_key_exists('secretKey', $store[$this->storeName])) {
-            $secretKey = $store[$this->storeName]['secretKey'];
+        if (array_key_exists('secretKey', $this->store)) {
+            $secretKey = $this->store['secretKey'];
         } else {
             throw new Exception("Secret Key is missing!");
         }
